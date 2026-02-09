@@ -15,7 +15,7 @@ const items = [
     { title: 'Finanzas', href: '/dashboard/finance', icon: DollarSign },
 ]
 
-export function DashboardSidebar() {
+export function DashboardSidebar({ className }: { className?: string }) {
     const pathname = usePathname()
     const router = useRouter()
     const supabase = createClient()
@@ -27,7 +27,7 @@ export function DashboardSidebar() {
     }
 
     return (
-        <aside className="w-64 border-r bg-card/50 hidden md:flex flex-col h-screen fixed">
+        <aside className={cn("w-64 border-r bg-card/50 hidden md:flex flex-col h-screen fixed", className)}>
             <div className="p-6">
                 <h2 className="text-2xl font-bold text-primary">StyleSync</h2>
                 <p className="text-xs text-muted-foreground uppercase tracking-widest mt-1">Admin Panel</p>

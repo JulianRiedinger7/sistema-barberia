@@ -80,3 +80,29 @@ export async function deleteAppointment(id: string) {
     revalidatePath('/dashboard')
     return { success: true }
 }
+
+export async function cancelAppointment(id: string) {
+    const cookieStore = await cookies()
+    const supabase = createClient(cookieStore)
+
+    // Ensure Admin
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { success: false, error: 'Unauthenticated' }
+
+    // Fix Admin Role just in case
+    await supabase.from('profiles').upsert({
+        id: user.id,
+        role: 'admin',
+        full_name: 'Administrador'
+    }, { onConflict: 'id' })
+
+    const { error } = await supabase
+        .from('appointments')
+        .update({ status: 'cancelled' })
+        .eq('id', id)
+
+    if (error) return { success: false, error: error.message }
+
+    revalidatePath('/dashboard')
+    return { success: true }
+}

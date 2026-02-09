@@ -155,9 +155,9 @@ export function AdminTimeline() {
     return (
         <Card className="h-full">
             <CardHeader className="flex flex-col gap-4">
-                <div className="flex flex-row items-center justify-between">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <CardTitle>Agenda</CardTitle>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 w-full sm:w-auto">
                         <div className="flex bg-muted rounded-lg p-1">
                             <Button
                                 variant={filterMode === 'today' ? 'secondary' : 'ghost'}
@@ -237,6 +237,7 @@ export function AdminTimeline() {
                                                         </span>
                                                         {app.status === 'confirmed' && <Badge className="bg-green-500/10 text-green-500 border-green-500/20 hover:bg-green-500/20">Confirmado</Badge>}
                                                         {app.status === 'completed' && <Badge variant="secondary">Completado</Badge>}
+                                                        {app.status === 'cancelled' && <Badge variant="destructive" className="bg-destructive/10 text-destructive border-destructive/20">Cancelado</Badge>}
                                                     </div>
                                                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
                                                         <span className="flex items-center gap-1"><Scissors className="w-3 h-3" /> {app.services?.name}</span>
@@ -249,14 +250,31 @@ export function AdminTimeline() {
 
                                                 <div className="flex gap-2">
                                                     {app.status === 'confirmed' && (
-                                                        <Button
-                                                            size="sm"
-                                                            disabled={isFuture}
-                                                            onClick={() => markAsAttended(app.id, app.services?.price || 0, app.services?.name || 'Corte')}
-                                                        >
-                                                            <CheckCircle className="w-4 h-4 mr-2" />
-                                                            {isFuture ? 'Futuro' : 'Cobrar'}
-                                                        </Button>
+                                                        <>
+                                                            <Button
+                                                                size="sm"
+                                                                variant="destructive"
+                                                                className="opacity-80 hover:opacity-100"
+                                                                disabled={!isFuture}
+                                                                onClick={async () => {
+                                                                    if (confirm('¿Cancelar este turno y liberar el horario?')) {
+                                                                        setLoading(true)
+                                                                        await import('@/app/actions/admin-actions').then(m => m.cancelAppointment(app.id))
+                                                                        fetchAppointments()
+                                                                    }
+                                                                }}
+                                                            >
+                                                                Cancelar
+                                                            </Button>
+                                                            <Button
+                                                                size="sm"
+                                                                disabled={isFuture}
+                                                                onClick={() => markAsAttended(app.id, app.services?.price || 0, app.services?.name || 'Corte')}
+                                                            >
+                                                                <CheckCircle className="w-4 h-4 mr-2" />
+                                                                {isFuture ? 'Futuro' : 'Cobrar'}
+                                                            </Button>
+                                                        </>
                                                     )}
 
                                                     {(app.status === 'completed' || app.status === 'cancelled') && (

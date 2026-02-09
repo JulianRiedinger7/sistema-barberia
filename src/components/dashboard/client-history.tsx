@@ -17,28 +17,30 @@ export function ClientHistory() {
                 <CardTitle>Historial Reciente</CardTitle>
             </CardHeader>
             <CardContent>
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Fecha</TableHead>
-                            <TableHead>Cliente</TableHead>
-                            <TableHead>Servicio</TableHead>
-                            <TableHead>Barbero</TableHead>
-                            <TableHead>Notas Técnicas</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {mockClients.map((c) => (
-                            <TableRow key={c.id}>
-                                <TableCell>{c.date}</TableCell>
-                                <TableCell className="font-medium">{c.client}</TableCell>
-                                <TableCell>{c.service}</TableCell>
-                                <TableCell>{c.barber}</TableCell>
-                                <TableCell className="text-muted-foreground italic">{c.notes}</TableCell>
+                <div className="overflow-x-auto">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Fecha</TableHead>
+                                <TableHead>Cliente</TableHead>
+                                <TableHead>Servicio</TableHead>
+                                <TableHead>Barbero</TableHead>
+                                <TableHead>Notas Técnicas</TableHead>
                             </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
+                        </TableHeader>
+                        <TableBody>
+                            {mockClients.map((c) => (
+                                <TableRow key={c.id}>
+                                    <TableCell>{c.date}</TableCell>
+                                    <TableCell className="font-medium">{c.client}</TableCell>
+                                    <TableCell>{c.service}</TableCell>
+                                    <TableCell>{c.barber}</TableCell>
+                                    <TableCell className="text-muted-foreground italic">{c.notes}</TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </div>
             </CardContent>
         </Card>
     )
