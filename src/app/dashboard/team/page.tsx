@@ -36,15 +36,26 @@ export default function TeamPage() {
                 {barbers.map(barber => (
                     <Card key={barber.id}>
                         <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-lg font-medium">{barber.full_name}</CardTitle>
-                            <User className="h-4 w-4 text-muted-foreground" />
+                            <div className="flex items-center gap-3">
+                                {barber.avatar_url ? (
+                                    <img src={barber.avatar_url} alt={barber.full_name} className="w-10 h-10 rounded-full object-cover border border-primary/20" />
+                                ) : (
+                                    <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+                                        <User className="h-5 w-5 text-muted-foreground" />
+                                    </div>
+                                )}
+                                <CardTitle className="text-lg font-medium">{barber.full_name}</CardTitle>
+                            </div>
                         </CardHeader>
                         <CardContent>
                             <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
                                 <Clock className="w-4 h-4" />
                                 <span>{barber.work_start?.slice(0, 5) || '09:00'} - {barber.work_end?.slice(0, 5) || '20:00'}</span>
                             </div>
-                            <EditScheduleDialog barber={barber} onRefresh={fetchBarbers} />
+                            <div className="flex flex-col gap-2">
+                                <EditScheduleDialog barber={barber} onRefresh={fetchBarbers} />
+                                <EditProfileDialog barber={barber} onRefresh={fetchBarbers} />
+                            </div>
                         </CardContent>
                     </Card>
                 ))}
@@ -141,6 +152,100 @@ function EditScheduleDialog({ barber, onRefresh }: { barber: any, onRefresh: () 
                     </div>
                     <Button type="submit" className="w-full" disabled={loading}>
                         {loading ? 'Guardando...' : 'Actualizar Horario'}
+                    </Button>
+                </form>
+            </DialogContent>
+        </Dialog>
+    )
+}
+
+function EditProfileDialog({ barber, onRefresh }: { barber: any, onRefresh: () => void }) {
+    const [open, setOpen] = useState(false)
+    const [name, setName] = useState(barber.full_name || '')
+    const [uploading, setUploading] = useState(false)
+    const [loading, setLoading] = useState(false)
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!e.target.files || e.target.files.length === 0) return
+        const file = e.target.files[0]
+        setUploading(true)
+
+        // 1. Upload to Supabase Storage
+        const fileExt = file.name.split('.').pop()
+        const fileName = `${barber.id}-${Math.random()}.${fileExt}`
+        const filePath = `${fileName}`
+
+        const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, file)
+
+        if (uploadError) {
+            alert('Error al subir imagen: ' + uploadError.message)
+            setUploading(false)
+            return
+        }
+
+        // 2. Get Public URL
+        const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(filePath)
+
+        // 3. Update Profile (Auto-save on upload for simplicity, or just store state)
+        // We'll just update the profile immediately here for better UX
+        const { error: updateError } = await supabase
+            .from('profiles')
+            .update({ avatar_url: publicUrl })
+            .eq('id', barber.id)
+
+        if (updateError) {
+            alert('Error al actualizar perfil: ' + updateError.message)
+        } else {
+            onRefresh()
+        }
+        setUploading(false)
+    }
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault()
+        setLoading(true)
+
+        // Update Name (Avatar handled separately above or could be merged)
+        const { error } = await supabase
+            .from('profiles')
+            .update({ full_name: name })
+            .eq('id', barber.id)
+
+        if (error) {
+            alert('Error: ' + error.message)
+        } else {
+            setOpen(false)
+            onRefresh()
+        }
+        setLoading(false)
+    }
+
+    return (
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+                <Button variant="secondary" className="w-full">
+                    Editar Perfil
+                </Button>
+            </DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Perfil de {barber.full_name}</DialogTitle>
+                </DialogHeader>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="space-y-2">
+                        <Label>Nombre Completo</Label>
+                        <Input value={name} onChange={e => setName(e.target.value)} required />
+                    </div>
+                    <div className="space-y-2">
+                        <Label>Foto de Perfil</Label>
+                        <div className="flex items-center gap-4">
+                            {barber.avatar_url && <img src={barber.avatar_url} alt="Avatar" className="w-12 h-12 rounded-full object-cover" />}
+                            <Input type="file" accept="image/*" onChange={handleFileChange} disabled={uploading} />
+                        </div>
+                        {uploading && <p className="text-sm text-yellow-500">Subiendo imagen...</p>}
+                    </div>
+                    <Button type="submit" className="w-full" disabled={loading || uploading}>
+                        {loading ? 'Guardando...' : 'Guardar Cambios'}
                     </Button>
                 </form>
             </DialogContent>

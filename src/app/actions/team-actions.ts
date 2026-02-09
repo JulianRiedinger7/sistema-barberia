@@ -53,3 +53,21 @@ export async function updateBarberWorkHours(barberId: string, startHour: string,
     revalidatePath('/dashboard/team')
     return { success: true }
 }
+
+export async function updateBarberProfile(barberId: string, fullName: string, avatarUrl?: string) {
+    const cookieStore = await cookies()
+    const supabase = createClient(cookieStore)
+
+    const updateData: any = { full_name: fullName }
+    if (avatarUrl) updateData.avatar_url = avatarUrl
+
+    const { error } = await supabase
+        .from('profiles')
+        .update(updateData)
+        .eq('id', barberId)
+
+    if (error) return { success: false, error: error.message }
+
+    revalidatePath('/dashboard/team')
+    return { success: true }
+}
