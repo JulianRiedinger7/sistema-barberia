@@ -7,6 +7,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
+import { Input } from '@/components/ui/input'
+import { Search } from 'lucide-react'
 
 interface ClientStats {
     email: string
@@ -19,7 +21,19 @@ interface ClientStats {
 
 export default function ClientsPage() {
     const [clients, setClients] = useState<ClientStats[]>([])
+    const [filteredClients, setFilteredClients] = useState<ClientStats[]>([])
+    const [search, setSearch] = useState('')
     const [loading, setLoading] = useState(true)
+
+    useEffect(() => {
+        const lowerSearch = search.toLowerCase()
+        const filtered = clients.filter(c =>
+            c.name.toLowerCase().includes(lowerSearch) ||
+            c.email.toLowerCase().includes(lowerSearch) ||
+            c.phone.includes(lowerSearch)
+        )
+        setFilteredClients(filtered)
+    }, [search, clients])
 
     useEffect(() => {
         async function fetchData() {
@@ -95,7 +109,9 @@ export default function ClientsPage() {
                     }
                 })
 
-                setClients(Array.from(clientMap.values()))
+                const list = Array.from(clientMap.values())
+                setClients(list)
+                setFilteredClients(list)
             }
             setLoading(false)
         }
@@ -104,7 +120,18 @@ export default function ClientsPage() {
 
     return (
         <div className="space-y-8">
-            <h1 className="text-3xl font-light">Cartera de <span className="text-primary font-bold">Clientes</span></h1>
+            <div className="flex justify-between items-end">
+                <h1 className="text-3xl font-light">Cartera de <span className="text-primary font-bold">Clientes</span></h1>
+                <div className="relative w-64">
+                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        placeholder="Buscar cliente..."
+                        className="pl-8"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                    />
+                </div>
+            </div>
 
             <Card>
                 <CardHeader>
@@ -122,7 +149,7 @@ export default function ClientsPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {clients.map((client, i) => (
+                            {filteredClients.map((client, i) => (
                                 <TableRow key={i}>
                                     <TableCell className="font-medium">{client.name}</TableCell>
                                     <TableCell className="text-muted-foreground">{client.email}</TableCell>
