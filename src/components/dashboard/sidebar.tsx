@@ -12,7 +12,7 @@ const items = [
     { title: 'Servicios', href: '/dashboard/services', icon: Scissors },
     { title: 'Equipo', href: '/dashboard/team', icon: Users },
     { title: 'Clientes', href: '/dashboard/clients', icon: Users },
-    { title: 'Finanzas', href: '/dashboard/finance', icon: DollarSign },
+    { title: 'Gestión', href: '/dashboard/management', icon: DollarSign },
 ]
 
 export function DashboardSidebar({ className }: { className?: string }) {
