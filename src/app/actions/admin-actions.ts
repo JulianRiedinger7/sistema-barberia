@@ -106,3 +106,45 @@ export async function cancelAppointment(id: string) {
     revalidatePath('/dashboard')
     return { success: true }
 }
+
+export async function createManualAppointment(data: {
+    barberId: string,
+    serviceId: string,
+    date: Date,
+    guestName: string,
+    guestEmail?: string,
+    guestPhone?: string
+}) {
+    const cookieStore = await cookies()
+    const supabase = createClient(cookieStore)
+
+    // 1. Check Admin
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { success: false, error: 'Unauthenticated' }
+
+    // 2. Calculate Slot Range (1 Hour)
+    const startTime = new Date(data.date)
+    const endTime = new Date(startTime.getTime() + 60 * 60 * 1000) // 1 Hour
+
+    // Format for TSTZRANGE
+    const slot = `[${startTime.toISOString()},${endTime.toISOString()})`
+
+    // 3. Insert
+    const { error } = await supabase.from('appointments').insert({
+        barber_id: data.barberId,
+        service_id: data.serviceId,
+        slot: slot,
+        status: 'confirmed',
+        guest_name: data.guestName,
+        guest_email: data.guestEmail,
+        guest_phone: data.guestPhone,
+        client_id: null
+    })
+
+    if (error) {
+        return { success: false, error: error.message }
+    }
+
+    revalidatePath('/dashboard')
+    return { success: true }
+}

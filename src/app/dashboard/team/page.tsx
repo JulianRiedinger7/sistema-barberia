@@ -162,6 +162,7 @@ function EditScheduleDialog({ barber, onRefresh }: { barber: any, onRefresh: () 
 function EditProfileDialog({ barber, onRefresh }: { barber: any, onRefresh: () => void }) {
     const [open, setOpen] = useState(false)
     const [name, setName] = useState(barber.full_name || '')
+    const [bio, setBio] = useState(barber.bio || '')
     const [uploading, setUploading] = useState(false)
     const [loading, setLoading] = useState(false)
 
@@ -208,7 +209,7 @@ function EditProfileDialog({ barber, onRefresh }: { barber: any, onRefresh: () =
         // Update Name (Avatar handled separately above or could be merged)
         const { error } = await supabase
             .from('profiles')
-            .update({ full_name: name })
+            .update({ full_name: name, bio: bio })
             .eq('id', barber.id)
 
         if (error) {
@@ -235,6 +236,15 @@ function EditProfileDialog({ barber, onRefresh }: { barber: any, onRefresh: () =
                     <div className="space-y-2">
                         <Label>Nombre Completo</Label>
                         <Input value={name} onChange={e => setName(e.target.value)} required />
+                    </div>
+                    <div className="space-y-2">
+                        <Label>Biografía</Label>
+                        <textarea
+                            className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            value={bio}
+                            onChange={e => setBio(e.target.value)}
+                            placeholder="Breve descripción del barbero..."
+                        />
                     </div>
                     <div className="space-y-2">
                         <Label>Foto de Perfil</Label>

@@ -47,7 +47,9 @@ export function BarberSelector({ onSelectBarber }: { onSelectBarber: (barber: an
                             <AvatarFallback><User /></AvatarFallback>
                         </Avatar>
                         <h3 className="text-xl font-semibold mb-1">{barber.full_name}</h3>
-                        <p className="text-sm text-muted-foreground">{barber.specialty || 'Master Barber'}</p>
+                        <p className="text-sm text-muted-foreground text-center line-clamp-3 italic">
+                            "{barber.bio || 'Barbero Profesional'}"
+                        </p>
                         <Button variant="outline" className="mt-4 border-primary/50 text-foreground group-hover:bg-primary group-hover:text-primary-foreground">Seleccionar</Button>
                     </CardContent>
                 </Card>
