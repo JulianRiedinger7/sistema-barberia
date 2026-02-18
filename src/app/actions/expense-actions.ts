@@ -29,7 +29,7 @@ export async function registerExpense(amount: number, category: string, descript
 
         if (error) throw new Error(`Expense Error: ${error.message}`)
 
-        revalidatePath('/dashboard/finance')
+        revalidatePath('/dashboard/management')
         return { success: true }
     } catch (error: any) {
         console.error('Server Action Error:', error)
